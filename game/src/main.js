@@ -8,7 +8,7 @@
 // window.__shotReady for a screenshot.
 import { BEST_KEY, STEP } from './config.js';
 import { createRandom } from './random.js';
-import { createWorld, EVENT_HIT, EVENT_NIGHT, EVENT_OVER, EVENT_PICKUP, EVENT_POWERUP, EVENT_WIN } from './world.js';
+import { createWorld, EVENT_FLARE, EVENT_HIT, EVENT_NIGHT, EVENT_OVER, EVENT_PICKUP, EVENT_POWERUP, EVENT_WIN } from './world.js';
 import { ACTION_CONFIRM, ACTION_MUTE, ACTION_PAUSE, ACTION_RESTART, createInput } from './input.js';
 import { createParticles } from './particles.js';
 import { createSound } from './audio.js';
@@ -131,12 +131,13 @@ function runGame() {
     const events = world.step(STEP, control, false);
     if (events & EVENT_PICKUP) sound.pickup(world.state.combo);
     if (events & EVENT_POWERUP) sound.powerup();
+    if (events & EVENT_FLARE) sound.flare();
     if (events & EVENT_HIT) {
       sound.hit();
       announce(world.state.petals === 1 ? 'Hit. 1 petal left.' : `Hit. ${world.state.petals} petals left.`);
     }
     if (events & EVENT_NIGHT) {
-      sound.night();
+      sound.night(world.state.night);
       announce(`Night ${world.state.night} of 5.`);
     }
     if (events & EVENT_WIN) finishGame(true);

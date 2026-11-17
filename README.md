@@ -16,9 +16,15 @@ one touch costs a petal, and three petals lost ends the run. Survive all
 
 - **Move** with the mouse or WASD / arrow keys — the moth follows your cursor.
 - **Gather motes** to feed the lantern (+light) and score. Chain them quickly
-  for a combo multiplier up to ×5.
+  for a combo multiplier up to ×5 — the combo meter shows how long you have.
+- **Golden blooms** — tight clusters of motes worth 3× each, usually parked
+  close to a wisp. **Mote trails** arc across the field, worth extra each.
 - **Flare burst** (hold Space or the mouse button): spends light to banish
   every wisp in a wide ring. Worth it when the dark closes in.
+- **Four wisp kinds**, one per night: drifters wander, hunters chase,
+  splitters burst into two fast minis when banished, dashers flash red and
+  lunge. Night 4 brings a gale that shoves you sideways; night 5 brings the
+  **Wisp King** — huge, crowned, worth 500.
 - **Power-ups**: Dewdrop (shield), Sunpetal (magnet), Dawn Shard (freeze).
 - **Win** by surviving night 5; **lose** by losing all 3 petals or letting
   the lantern go out three times.
@@ -41,7 +47,9 @@ Or open `game/index.html` from any static file server. Keyboard and mouse;
 
 - `game/src/config.js` — tuning and palette
 - `game/src/random.js` — seeded generator (reproducible fields)
-- `game/src/world.js` — the rules: light, motes, wisps, nights, scoring
+- `game/src/world.js` — the rules: light, motes, blooms, trails, nights, scoring
+- `game/src/nights.js` — the night director: each night's name, palette, wisp mix, wind
+- `game/src/wisps.js` — the wisp kinds and their hunting styles (drifter, hunter, splitter, dasher, mini, King)
 - `game/src/render.js` — sky, lantern light, moth, HUD and screens
 - `game/src/input.js` — keyboard, mouse and touch
 - `game/src/audio.js` — WebAudio synthesis: chimes, flare, generative pad
@@ -53,7 +61,8 @@ Or open `game/index.html` from any static file server. Keyboard and mouse;
 - `vendor/makefun-game.ts` — the kit's library, unchanged
 
 Screenshots in `screenshots/` are real renders of the game's own code
-(`?shot=start|play|surge|dawn&seed=7`), never edited.
+(`?shot=start|play|surge|dawn&seed=7`), never edited — title first, then live
+play, the night-4 surge, and the dawn.
 
 ## License
 

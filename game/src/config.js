@@ -1,7 +1,11 @@
-// Lumen Moth — tuning and art direction in one place.
+// Lumen Moth v2 — tuning and art direction in one place.
 // Every number the game balances on lives here, so a tweak never means hunting
 // through the world or the renderer. The palette is one night sky: indigo water,
 // aurora green, lantern gold, and the violet of the shadow wisps.
+//
+// v2: the field is far denser and brighter than v1 — a bigger moth with a real
+// lantern glow, many more motes at once, golden blooms and mote trails worth
+// chasing, and four wisp kinds plus the Wisp King on night 5.
 export const VIEW = { width: 1280, height: 720 };
 export const STEP = 1 / 60;
 export const BEST_KEY = 'lumen-moth-best';
@@ -14,41 +18,64 @@ export const LIGHT = {
   max: 100,
   drainPerSecond: 1.05,
   drainPerNight: 0.09,
-  moteRestore: 7,
+  moteRestore: 8,
+  bloomRestore: 16,
   flareCost: 12,
   hitLoss: 10,
   lowWarning: 30,
 };
 
 export const MOTH = {
-  radius: 16,
+  radius: 24,
   accel: 2600,
-  maxSpeed: 340,
+  maxSpeed: 360,
   drag: 0.9,
   flapHz: 11,
 };
 
 export const MOTE = {
-  radius: 11,
+  radius: 12,
   score: 10,
-  comboWindowSeconds: 3,
+  comboWindowSeconds: 3.5,
   maxCombo: 5,
-  targetOnField: 9,
-  spawnEverySeconds: 0.9,
+  targetOnField: 16,
+  spawnEverySeconds: 0.55,
+};
+
+// A golden bloom: a tight cluster of motes worth 3x each, often placed close
+// to a wisp — the risk-reward heart of v2.
+export const BLOOM = {
+  motes: 4,
+  value: 3,
+  spawnEverySeconds: 9,
+  nearWispChance: 0.7,
+};
+
+// A mote trail: an arc of motes worth extra, laid out so following the curve
+// feels like flying a racing line.
+export const TRAIL = {
+  motes: 5,
+  score: 15,
+  spawnEverySeconds: 12,
 };
 
 export const WISP = {
-  radius: 17,
   baseSpeed: 56,
   speedPerNight: 14,
-  spawnEverySeconds: 3.0,
+  spawnEverySeconds: 2.6,
   spawnSpeedUpPerNight: 0.22,
-  maxOnField: 12,
+  maxOnField: 14,
   touchScore: 0,
 };
 
+export const KING = {
+  radius: 48,
+  speed: 58,
+  score: 500,
+};
+
 export const FLARE = {
-  radius: 150,
+  radius: 170,
   scorePerWisp: 25,
   cooldownSeconds: 1.2,
 };
@@ -61,16 +88,23 @@ export const POWERUP = {
   kinds: ['dewdrop', 'sunpetal', 'dawnshard'],
 };
 
+// Night 4 gale: gusts that shove the moth and the motes sideways.
+export const WIND = {
+  gustSeconds: 3.0,
+  calmSeconds: 5.0,
+  strength: 95,
+};
+
 export const PALETTE = {
-  skyTop: '#070a24',
-  skyMid: '#131a4a',
-  skyLow: '#27336e',
+  skyTop: '#0b1034',
+  skyMid: '#1c2560',
+  skyLow: '#3a4a94',
   auroraA: '#37e6a0',
   auroraB: '#3ec6e0',
   auroraC: '#b678f0',
-  hillFar: '#101736',
-  hillNear: '#0b1029',
-  flowerStem: '#1d5c3a',
+  hillFar: '#141c44',
+  hillNear: '#0d1332',
+  flowerStem: '#2a7a4c',
   flowerPetal: '#ff7fb0',
   moteCore: '#fff3c4',
   moteGlow: '#ffd76a',
@@ -87,3 +121,6 @@ export const PALETTE = {
 
 // Pentatonic ladder the pickup chime climbs as the combo grows.
 export const CHIME_SCALE = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
+
+// One short motif root per night, for the night-change fanfare.
+export const NIGHT_MOTIFS = [261.63, 293.66, 329.63, 311.13, 392.0];

@@ -84,7 +84,7 @@ export function createParticles(random) {
       ctx.restore();
       ctx.save();
       ctx.textAlign = 'center';
-      ctx.font = '700 22px system-ui, sans-serif';
+      ctx.font = '800 27px system-ui, sans-serif';
       for (const t of texts) {
         ctx.globalAlpha = 1 - t.age / t.life;
         ctx.fillStyle = t.color;

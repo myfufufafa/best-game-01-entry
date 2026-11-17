@@ -3,7 +3,10 @@
 // the flare whooshes, and a slow generative pad plays underneath while the game
 // runs. The engine stays silent until the player first interacts (browsers
 // require a gesture), and every call is safe when audio is unavailable.
-import { CHIME_SCALE } from './config.js';
+//
+// v2: each night opens with its own short motif, the flare gets a real whoosh,
+// and banishing a wisp answers with a rising arpeggio.
+import { CHIME_SCALE, NIGHT_MOTIFS } from './config.js';
 
 const PAD_NOTES = [110.0, 130.81, 164.81, 196.0];
 
@@ -111,13 +114,22 @@ export function createSound() {
       tone(90, 0.3, 'square', 0.1, 0, 40);
     },
     flare() {
+      // A whoosh: a bright tone sliding down, with a soft high shimmer.
       tone(880, 0.5, 'sine', 0.14, 0, 220);
       tone(1320, 0.4, 'triangle', 0.07, 0.05, 330);
+      tone(220, 0.45, 'sawtooth', 0.05, 0, 90);
     },
-    night() {
-      tone(261.63, 0.5, 'triangle', 0.1);
-      tone(329.63, 0.5, 'triangle', 0.1, 0.12);
-      tone(392.0, 0.7, 'triangle', 0.1, 0.24);
+    banish() {
+      // Rising arpeggio when a wisp is banished.
+      const seq = [659.25, 783.99, 1046.5];
+      seq.forEach((freq, i) => tone(freq, 0.22, 'triangle', 0.09, i * 0.06));
+    },
+    night(nightNumber) {
+      // Each night opens on its own root, a short three-note motif.
+      const root = NIGHT_MOTIFS[Math.max(1, Math.min(5, nightNumber || 1)) - 1];
+      tone(root, 0.5, 'triangle', 0.1);
+      tone(root * 1.25, 0.5, 'triangle', 0.1, 0.12);
+      tone(root * 1.5, 0.7, 'triangle', 0.1, 0.24);
     },
     win() {
       const seq = [523.25, 659.25, 783.99, 1046.5, 1318.5];
