@@ -106,17 +106,29 @@ export const PALETTE = {
   hillNear: '#0d1332',
   flowerStem: '#2a7a4c',
   flowerPetal: '#ff7fb0',
-  moteCore: '#fff3c4',
-  moteGlow: '#ffd76a',
+  moteCore: '#fff7d0',
+  moteGlow: '#ffc93c',
   mothBody: '#3a2a1c',
-  mothWing: '#ffd76a',
-  mothWingEdge: '#ff9d5c',
+  mothWing: '#ffc93c',
+  mothWingEdge: '#ff8a2a',
   wispBody: '#241d4d',
   wispEye: '#c9b8ff',
   hudInk: '#f4ecd8',
   hudDim: '#a9b4d8',
   danger: '#ff6b6b',
-  gold: '#ffd76a',
+  gold: '#ffc93c',
+};
+
+export const DAWN_PALETTE = {
+  skyTop: '#241547',
+  skyMid: '#b84a6e',
+  skyLow: '#ff9d5c',
+  auroraA: '#ff9d5c',
+  auroraB: '#ffb3c9',
+  auroraC: '#ffd76a',
+  hillFar: '#3a1c4e',
+  hillNear: '#241233',
+  aurora: 0.22,
 };
 
 // Pentatonic ladder the pickup chime climbs as the combo grows.

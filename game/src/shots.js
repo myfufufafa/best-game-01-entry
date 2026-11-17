@@ -4,9 +4,9 @@
 // too close — so every frame is what a real game looks like, and the same seed
 // always gives the same frame.
 //
-// Order in shots.json is the order the judge sees them: the title is first
-// (the cover, the densest and most readable frame), then live play, then the
-// night-4 surge, then the dawn.
+// Order in shots.json is the order the judge sees them: the cover is the
+// densest action frame (the night-4 surge, moth mid-flare), then the title,
+// then live play, then the dawn.
 import { STEP, VIEW } from './config.js';
 import { SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE, SCREEN_WIN } from './render.js';
 import { EVENT_OVER, EVENT_WIN } from './world.js';

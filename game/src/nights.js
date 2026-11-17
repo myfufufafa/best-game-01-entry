@@ -11,7 +11,7 @@ export const NIGHT_PLANS = [
     kinds: ['drifter'],
     kindWeights: [1],
     wind: 0,
-    palette: { skyTop: '#0b1034', skyMid: '#1c2560', skyLow: '#3a4a94', aurora: 0.30 },
+    palette: { skyTop: '#0b1034', skyMid: '#1c2560', skyLow: '#3a4a94', aurora: 0.36 },
   },
   {
     night: 2,
@@ -20,7 +20,7 @@ export const NIGHT_PLANS = [
     kinds: ['drifter', 'hunter'],
     kindWeights: [0.55, 0.45],
     wind: 0,
-    palette: { skyTop: '#081230', skyMid: '#142a5c', skyLow: '#2e5a8a', aurora: 0.34 },
+    palette: { skyTop: '#081230', skyMid: '#142a5c', skyLow: '#2e5a8a', aurora: 0.40 },
   },
   {
     night: 3,
@@ -29,7 +29,7 @@ export const NIGHT_PLANS = [
     kinds: ['drifter', 'hunter', 'splitter'],
     kindWeights: [0.35, 0.35, 0.3],
     wind: 0,
-    palette: { skyTop: '#120b38', skyMid: '#241a5e', skyLow: '#453a8a', aurora: 0.36 },
+    palette: { skyTop: '#120b38', skyMid: '#241a5e', skyLow: '#453a8a', aurora: 0.42 },
   },
   {
     night: 4,
@@ -38,7 +38,7 @@ export const NIGHT_PLANS = [
     kinds: ['hunter', 'splitter', 'dasher'],
     kindWeights: [0.35, 0.3, 0.35],
     wind: 1,
-    palette: { skyTop: '#071224', skyMid: '#12294e', skyLow: '#2a4a72', aurora: 0.40 },
+    palette: { skyTop: '#071224', skyMid: '#12294e', skyLow: '#2a4a72', aurora: 0.46 },
   },
   {
     night: 5,
@@ -48,7 +48,7 @@ export const NIGHT_PLANS = [
     kindWeights: [0.2, 0.3, 0.25, 0.25],
     wind: 0.5,
     king: true,
-    palette: { skyTop: '#160a30', skyMid: '#2c1448', skyLow: '#4a2a5e', aurora: 0.42 },
+    palette: { skyTop: '#160a30', skyMid: '#2c1448', skyLow: '#4a2a5e', aurora: 0.48 },
   },
 ];
 

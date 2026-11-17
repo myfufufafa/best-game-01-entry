@@ -61,8 +61,32 @@ Or open `game/index.html` from any static file server. Keyboard and mouse;
 - `vendor/makefun-game.ts` — the kit's library, unchanged
 
 Screenshots in `screenshots/` are real renders of the game's own code
-(`?shot=start|play|surge|dawn&seed=7`), never edited — title first, then live
-play, the night-4 surge, and the dawn.
+(`?shot=surge|start|play|dawn&seed=7`), never edited — the night-4 surge
+mid-flare first (the cover), then the title, live play, and the dawn.
+
+## v3 — what changed from v2
+
+- **Cover first:** the first screenshot is now the densest action frame
+  (surge, moth mid-flare), not the title screen — the title is second.
+- **Title screen rebuilt:** a hero moth ~3× life size with a glowing
+  lantern, a 4-kind wisp roster with icons, a content count line
+  (5 nights • 4 wisp kinds • 3 gifts • 1 boss), a one-line control strip,
+  and a real gold BEGIN THE NIGHT button. The full how-to moved to the
+  pause screen.
+- **Readable wisps:** each kind has its own bright outline colour
+  (violet / pink / green / red) and eyes ~26% of body width, so the four
+  kinds stay apart even at thumbnail size.
+- **Bigger moments:** motes ~1.5× with stronger glow, golden blooms
+  ringed 3× a plain mote, and big centre texts — FLARE!, BLOOM x3!,
+  COMBO x5! — with dark outlines; pickup scores are white/gold and bold.
+- ** fuller sky:** hanging lanterns and ~70% more fireflies fill the
+  middle of the field; the moon is golden with a warm halo.
+- **HUD shows the systems:** an INCOMING panel (wisps left, by kind) and
+  gift pills (SHIELD / MAGNET / FREEZE) at the edges, centre kept clear.
+- **Dawn is dawn:** the win screen has its own rose-and-gold sunrise sky
+  with a visible sun, under a thinner overlay.
+- Mechanics are unchanged: moth + lantern + motes + wisps + 5 nights +
+  Wisp King + 3 gifts, all deterministic (seed 7).
 
 ## License
 

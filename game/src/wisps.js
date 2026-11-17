@@ -10,13 +10,16 @@
 //   king    — the night-5 boss: huge, slow, worth 500, and hard to shake.
 import { KING, VIEW, WISP } from './config.js';
 
+// v3: every kind now carries its own bright outline colour, name and one-word
+// behaviour, so the four kinds stay apart at thumbnail size and the title
+// screen can show them as a roster.
 export const WISP_KINDS = {
-  drifter: { radius: 20, speed: 52, score: 25, eye: '#c9b8ff' },
-  hunter: { radius: 23, speed: 80, score: 30, eye: '#ffb3c9' },
-  splitter: { radius: 24, speed: 64, score: 40, eye: '#b8ffce' },
-  dasher: { radius: 21, speed: 72, score: 40, eye: '#ffd76a' },
-  mini: { radius: 13, speed: 122, score: 15, eye: '#e8d8ff' },
-  king: { radius: KING.radius, speed: KING.speed, score: KING.score, eye: '#ff5c5c' },
+  drifter: { radius: 20, speed: 52, score: 25, eye: '#c9b8ff', outline: '#c98cff', name: 'DRIFTER', verb: 'wanders' },
+  hunter: { radius: 23, speed: 80, score: 30, eye: '#ffb3c9', outline: '#ff5c8a', name: 'HUNTER', verb: 'chases' },
+  splitter: { radius: 24, speed: 64, score: 40, eye: '#b8ffce', outline: '#5cff9d', name: 'SPLITTER', verb: 'bursts' },
+  dasher: { radius: 21, speed: 72, score: 40, eye: '#ffd76a', outline: '#ff5c5c', name: 'DASHER', verb: 'lunges' },
+  mini: { radius: 13, speed: 122, score: 15, eye: '#e8d8ff', outline: '#e8d8ff', name: 'MINI', verb: 'swarms' },
+  king: { radius: KING.radius, speed: KING.speed, score: KING.score, eye: '#ff5c5c', outline: '#ff5c5c', name: 'WISP KING', verb: 'rules night 5' },
 };
 
 function edgePoint(random) {

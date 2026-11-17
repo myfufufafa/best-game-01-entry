@@ -3,11 +3,12 @@
 // the HUD, and the five screens (title, play, paused, game over, dawn).
 // The renderer never changes the rules — it only shows the state it is given.
 //
-// v2: the scene is layered and bright enough to read at contact-sheet size —
-// a moon with a halo, pine silhouettes, stronger aurora, drifting spores, a
-// much bigger moth carrying a visible lantern, and wisps big enough to see
-// their eyes. The night's own palette tints the sky.
-import { LIGHT, PALETTE, VIEW } from './config.js';
+// v3: the scene is layered and bright enough to read at contact-sheet size —
+// a golden moon with a halo, hanging lanterns and fireflies filling the
+// middle sky, a much bigger moth carrying a visible lantern, and wisps with
+// bright per-kind outlines and big eyes. The night's own palette tints the
+// sky, and the win screen gets its own dawn sky.
+import { DAWN_PALETTE, LIGHT, PALETTE, VIEW } from './config.js';
 import { WISP_KINDS } from './wisps.js';
 
 export const SCREEN_TITLE = 'title';
@@ -59,8 +60,9 @@ export function createRenderer(canvas) {
     return { scale, ox, oy };
   }
 
-  function drawSky(state) {
-    const pal = paletteFor(state);
+  function drawSky(state, screen) {
+    const dawn = screen === SCREEN_WIN;
+    const pal = dawn ? DAWN_PALETTE : paletteFor(state);
     const sky = ctx.createLinearGradient(0, 0, 0, VIEW.height);
     sky.addColorStop(0, pal.skyTop);
     sky.addColorStop(0.55, pal.skyMid);
@@ -68,21 +70,37 @@ export function createRenderer(canvas) {
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, VIEW.width, VIEW.height);
 
-    // The moon, right side below the HUD, with a wide halo — the second
-    // light of the scene. Kept clear of the lantern meter up top.
-    glowCircle(ctx, 1090, 230, 170, 'rgba(235, 240, 255, 0.28)', 0.9);
-    ctx.fillStyle = '#f2f5ff';
-    ctx.beginPath();
-    ctx.arc(1090, 230, 46, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(190, 200, 235, 0.55)';
-    ctx.beginPath();
-    ctx.arc(1074, 218, 9, 0, Math.PI * 2);
-    ctx.arc(1104, 244, 11, 0, Math.PI * 2);
-    ctx.arc(1092, 210, 5, 0, Math.PI * 2);
-    ctx.fill();
+    if (dawn) {
+      // Sunrise at the right horizon, clear of the results panel: the win
+      // screen's own light, so the dawn reads as dawn.
+      glowCircle(ctx, 1130, 500, 260, 'rgba(255, 157, 92, 0.55)', 0.95);
+      ctx.fillStyle = '#ffd76a';
+      ctx.beginPath();
+      ctx.arc(1130, 500, 66, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff3c4';
+      ctx.beginPath();
+      ctx.arc(1130, 500, 46, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // The moon, right side below the HUD: golden now, with a wide warm
+      // halo and craters — a light, not a grey smudge.
+      glowCircle(ctx, 1090, 230, 170, 'rgba(255, 205, 100, 0.45)', 0.9);
+      ctx.fillStyle = '#ffe9a8';
+      ctx.beginPath();
+      ctx.arc(1090, 230, 46, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(200, 150, 60, 0.55)';
+      ctx.beginPath();
+      ctx.arc(1074, 218, 9, 0, Math.PI * 2);
+      ctx.arc(1104, 244, 11, 0, Math.PI * 2);
+      ctx.arc(1092, 210, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     // Aurora ribbons, breathing — stronger than v1, a real band of colour.
+    // (Not at dawn: the sunrise owns that sky.)
+    if (!dawn) {
     ctx.save();
     for (let band = 0; band < 3; band += 1) {
       const baseY = 90 + band * 55;
@@ -106,11 +124,12 @@ export function createRenderer(canvas) {
       ctx.fill();
     }
     ctx.restore();
+    }
 
-    // Stars, twinkling by their own phase and depth layer.
+    // Stars, twinkling by their own phase and depth layer (faint at dawn).
     for (const star of state.stars) {
       const tw = 0.35 + 0.65 * Math.abs(Math.sin(state.time * 0.9 + star.twinkle));
-      ctx.globalAlpha = tw * star.layer;
+      ctx.globalAlpha = tw * star.layer * (dawn ? 0.15 : 1);
       ctx.fillStyle = '#dfe8ff';
       ctx.beginPath();
       ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
@@ -131,6 +150,32 @@ export function createRenderer(canvas) {
     }
     ctx.restore();
     ctx.globalAlpha = 1;
+
+    // Hanging lanterns in the far distance: warm lights strung across the
+    // middle sky, swaying gently — the second background layer.
+    if (!dawn) {
+      for (const lamp of state.lanterns || []) {
+        const sway = Math.sin(state.time * 0.8 + lamp.sway) * 6;
+        const lx = lamp.x + sway;
+        const ly = lamp.y;
+        const s = lamp.size;
+        ctx.strokeStyle = 'rgba(20, 24, 48, 0.9)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(lx, ly - 46 * s);
+        ctx.lineTo(lx, ly - 12 * s);
+        ctx.stroke();
+        glowCircle(ctx, lx, ly, 34 * s, 'rgba(255, 205, 100, 0.5)', 0.8);
+        ctx.fillStyle = lamp.hue;
+        ctx.beginPath();
+        ctx.ellipse(lx, ly, 10 * s, 13 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff3c4';
+        ctx.beginPath();
+        ctx.arc(lx, ly, 4 * s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
     // Rolling hills, pine silhouettes on the far ridge, and a meadow of
     // glowing flowers along the bottom.
@@ -191,30 +236,37 @@ export function createRenderer(canvas) {
   function drawMotes(state) {
     for (const mote of state.motes) {
       const pulse = 0.75 + 0.25 * Math.sin(mote.phase * 2.4);
-      const glowR = mote.bloom ? 58 : 44;
-      glowCircle(ctx, mote.x, mote.y, glowR * pulse, 'rgba(255, 215, 106, 0.6)', 0.85);
+      // v3: motes ~1.5x v2, with a stronger glow — the fuel reads at a glance.
+      const glowR = mote.bloom ? 84 : 62;
+      glowCircle(ctx, mote.x, mote.y, glowR * pulse, 'rgba(255, 205, 100, 0.65)', 0.85);
       if (mote.bloom) {
-        // Bloom motes wear a golden ring so the 3x cluster reads at a glance.
-        ctx.strokeStyle = 'rgba(255, 215, 106, 0.9)';
-        ctx.lineWidth = 2.5;
+        // Bloom motes wear a big golden ring, 3x a plain mote across, so the
+        // 3x cluster reads at a glance.
+        ctx.strokeStyle = 'rgba(255, 215, 106, 0.95)';
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(mote.x, mote.y, 17 * pulse, 0, Math.PI * 2);
+        ctx.arc(mote.x, mote.y, 26 * pulse, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(255, 233, 168, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(mote.x, mote.y, 33 * pulse, 0, Math.PI * 2);
         ctx.stroke();
       }
       if (mote.trail) {
-        ctx.strokeStyle = 'rgba(155, 232, 255, 0.7)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(155, 232, 255, 0.8)';
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.arc(mote.x, mote.y, 15 * pulse, 0, Math.PI * 2);
+        ctx.arc(mote.x, mote.y, 20 * pulse, 0, Math.PI * 2);
         ctx.stroke();
       }
       ctx.fillStyle = PALETTE.moteCore;
       ctx.beginPath();
-      ctx.arc(mote.x, mote.y, 7.5 * pulse + 2, 0, Math.PI * 2);
+      ctx.arc(mote.x, mote.y, 11 * pulse + 2, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = PALETTE.moteGlow;
       ctx.beginPath();
-      ctx.arc(mote.x, mote.y, 12.5 * pulse, 0, Math.PI * 2);
+      ctx.arc(mote.x, mote.y, 18 * pulse, 0, Math.PI * 2);
       ctx.globalAlpha = 0.35;
       ctx.fill();
       ctx.globalAlpha = 1;
@@ -281,10 +333,13 @@ export function createRenderer(canvas) {
       const r = wisp.radius;
       const wob = Math.sin(wisp.wobble * 2) * 3;
       const telegraph = wisp.kind === 'dasher' && wisp.mode === 'telegraph';
+      const outline = telegraph ? '#ff5c5c' : (spec.outline || 'rgba(180, 160, 255, 0.55)');
       ctx.save();
       ctx.translate(wisp.x, wisp.y);
-      // A violet aura so the wisp reads as a dark blot against the sky.
-      glowCircle(ctx, 0, 0, r * 2.1, telegraph ? 'rgba(255, 92, 92, 0.5)' : 'rgba(120, 90, 220, 0.4)', 0.8);
+      // A bright aura in the kind's own colour, so the wisp reads as a
+      // threat against the sky instead of a dark blot on it.
+      glowCircle(ctx, 0, 0, r * 2.4, telegraph ? 'rgba(255, 92, 92, 0.55)' : 'rgba(120, 90, 220, 0.45)', 0.85);
+      glowCircle(ctx, 0, 0, r * 1.3, outline, 0.28);
       ctx.globalAlpha = 0.94;
       ctx.fillStyle = wisp.kind === 'king' ? '#1a1038' : PALETTE.wispBody;
       ctx.beginPath();
@@ -297,8 +352,9 @@ export function createRenderer(canvas) {
       }
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = telegraph ? 'rgba(255, 92, 92, 0.95)' : 'rgba(180, 160, 255, 0.55)';
-      ctx.lineWidth = telegraph ? 3.5 : 1.8;
+      // Bright per-kind outline, 3px: the four kinds stay apart at 256 px.
+      ctx.strokeStyle = outline;
+      ctx.lineWidth = telegraph ? 4 : 3;
       ctx.stroke();
       if (wisp.kind === 'king') {
         // Crown spikes on the boss.
@@ -321,12 +377,13 @@ export function createRenderer(canvas) {
         ctx.lineTo(0, r * 0.7);
         ctx.stroke();
       }
-      // Eyes, always watching the moth — bigger than v1, with a glint.
+      // Eyes, always watching the moth — v3: diameter ~26% of the body
+      // width, so they read even in a small screenshot.
       const look = Math.atan2(state.moth.y - wisp.y, state.moth.x - wisp.x);
       const ex = Math.cos(look) * 3;
       const ey = Math.sin(look) * 3;
-      const eyeR = Math.max(3.4, r * 0.17);
-      const eyeGap = Math.max(6, r * 0.32);
+      const eyeR = Math.max(4.5, r * 0.26);
+      const eyeGap = Math.max(7, r * 0.34);
       ctx.fillStyle = telegraph ? '#ff5c5c' : spec.eye;
       ctx.beginPath();
       ctx.arc(-eyeGap + ex, -r * 0.16 + ey, eyeR, 0, Math.PI * 2);
@@ -489,6 +546,33 @@ export function createRenderer(canvas) {
       roundRect(ctx, 28, 144, 130 * (state.comboTimer / 3.5), 8, 4);
       ctx.fill();
     }
+    // INCOMING: what is still hunting you, by kind — the depth on show.
+    if (state.wisps.length > 0) {
+      const counts = {};
+      for (const wisp of state.wisps) counts[wisp.kind] = (counts[wisp.kind] || 0) + 1;
+      const kinds = Object.keys(counts).sort();
+      const panelH = 30 + kinds.length * 20;
+      ctx.fillStyle = 'rgba(7, 10, 36, 0.62)';
+      roundRect(ctx, 28, 168, 196, panelH, 12);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 215, 106, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = PALETTE.gold;
+      ctx.font = '800 13px system-ui, sans-serif';
+      ctx.fillText(`INCOMING  ${state.wisps.length}`, 42, 190);
+      ctx.font = '700 15px system-ui, sans-serif';
+      kinds.forEach((kind, i) => {
+        const spec = WISP_KINDS[kind] || WISP_KINDS.drifter;
+        ctx.fillStyle = spec.outline || '#c9b8ff';
+        ctx.beginPath();
+        ctx.arc(48, 204 + i * 20, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = PALETTE.hudInk;
+        ctx.fillText(`${spec.name || kind.toUpperCase()} x${counts[kind]}`, 62, 209 + i * 20);
+      });
+    }
     // Night, top centre, with its progress bar and the night's name.
     ctx.textAlign = 'center';
     ctx.fillStyle = PALETTE.hudInk;
@@ -532,23 +616,23 @@ export function createRenderer(canvas) {
       ctx.quadraticCurveTo(px - 9, py, px, py - 9);
       ctx.fill();
     }
-    // Active effect timers, under the petals.
+    // Active effect timers, under the petals — as pills, so they read.
     ctx.font = '700 15px system-ui, sans-serif';
     let ty = 112;
-    if (state.shieldTimer > 0) {
-      ctx.fillStyle = '#7fd4ff';
-      ctx.fillText(`SHIELD ${Math.ceil(state.shieldTimer)}s`, meterX, ty);
-      ty += 20;
-    }
-    if (state.magnetTimer > 0) {
-      ctx.fillStyle = '#ffd76a';
-      ctx.fillText(`MAGNET ${Math.ceil(state.magnetTimer)}s`, meterX, ty);
-      ty += 20;
-    }
-    if (state.freezeTimer > 0) {
-      ctx.fillStyle = '#9be8ff';
-      ctx.fillText(`FREEZE ${Math.ceil(state.freezeTimer)}s`, meterX, ty);
-    }
+    const pill = (label, color) => {
+      ctx.fillStyle = 'rgba(7, 10, 36, 0.65)';
+      roundRect(ctx, meterX, ty - 17, 150, 23, 11);
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.fillText(label, meterX + 10, ty);
+      ty += 28;
+    };
+    if (state.shieldTimer > 0) pill(`SHIELD ${Math.ceil(state.shieldTimer)}s`, '#7fd4ff');
+    if (state.magnetTimer > 0) pill(`MAGNET ${Math.ceil(state.magnetTimer)}s`, '#ffd76a');
+    if (state.freezeTimer > 0) pill(`FREEZE ${Math.ceil(state.freezeTimer)}s`, '#9be8ff');
     ctx.restore();
   }
 
@@ -561,43 +645,164 @@ export function createRenderer(canvas) {
     ctx.stroke();
   }
 
+  // One wisp, small, for the title screen's roster: body, bright outline,
+  // big eyes — the same read as the field, at icon size.
+  function drawWispIcon(x, y, r, kind) {
+    const spec = WISP_KINDS[kind] || WISP_KINDS.drifter;
+    ctx.save();
+    ctx.translate(x, y);
+    glowCircle(ctx, 0, 0, r * 2, spec.outline, 0.3);
+    ctx.fillStyle = PALETTE.wispBody;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = spec.outline;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    const eyeR = Math.max(2.5, r * 0.26);
+    const gap = r * 0.34;
+    ctx.fillStyle = spec.eye;
+    ctx.beginPath();
+    ctx.arc(-gap, -r * 0.16, eyeR, 0, Math.PI * 2);
+    ctx.arc(gap, -r * 0.16, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // The hero moth for the title screen: the same moth as the field, drawn
+  // ~3x life size (wingspan ~265 px, over 20% of the frame) with a big
+  // lantern glow, so the cover shows its hero at a glance.
+  function drawHeroMoth(x, y, scale, time) {
+    ctx.save();
+    glowCircle(ctx, x, y, 230, 'rgba(255, 205, 100, 0.55)', 0.95);
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.rotate(-0.12);
+    const flap = Math.sin(time * 2.4) * 0.5;
+    for (const side of [-1, 1]) {
+      ctx.save();
+      ctx.scale(side * (1 - flap * 0.45), 1);
+      const wingGrad = ctx.createLinearGradient(0, -44, 0, 10);
+      wingGrad.addColorStop(0, PALETTE.mothWing);
+      wingGrad.addColorStop(1, PALETTE.mothWingEdge);
+      ctx.fillStyle = wingGrad;
+      ctx.beginPath();
+      ctx.ellipse(-22, -14, 22, 34, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(-19, 20, 15, 20, -0.35, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.beginPath();
+      ctx.arc(-26, -24, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-20, 26, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = PALETTE.mothBody;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 11, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, -27, 9.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#2a1f14';
+    ctx.lineWidth = 2.4;
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(side * 5, -32);
+      ctx.quadraticCurveTo(side * 15, -46, side * 20, -55);
+      ctx.stroke();
+      ctx.fillStyle = '#ffd76a';
+      ctx.beginPath();
+      ctx.arc(side * 20, -55, 3.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#1a1208';
+    ctx.beginPath();
+    ctx.arc(-4, -28, 2.6, 0, Math.PI * 2);
+    ctx.arc(4, -28, 2.6, 0, Math.PI * 2);
+    ctx.fill();
+    glowCircle(ctx, 0, 34, 20, 'rgba(255, 215, 106, 0.8)', 0.9);
+    ctx.fillStyle = '#ffe9a8';
+    ctx.beginPath();
+    ctx.arc(0, 34, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff9d5c';
+    ctx.beginPath();
+    ctx.arc(0, 34, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
   function drawTitle(state, best) {
     ctx.save();
-    ctx.fillStyle = 'rgba(4, 6, 20, 0.45)';
+    // v3: a light dim, so the live world (motes, lanterns, flowers) shows
+    // through behind the title instead of a dark wall.
+    ctx.fillStyle = 'rgba(4, 6, 20, 0.28)';
     ctx.fillRect(0, 0, VIEW.width, VIEW.height);
+    if (best > 0) {
+      ctx.textAlign = 'right';
+      ctx.fillStyle = PALETTE.gold;
+      ctx.font = '800 22px system-ui, sans-serif';
+      ctx.fillText(`BEST  ${best}`, VIEW.width - 28, 44);
+    }
     ctx.textAlign = 'center';
     ctx.fillStyle = PALETTE.gold;
     ctx.font = '600 24px Georgia, serif';
-    ctx.fillText('A GAME OF LIGHT', VIEW.width / 2, 118);
+    ctx.fillText('A GAME OF LIGHT', VIEW.width / 2, 92);
     ctx.fillStyle = '#fff8e2';
     ctx.font = '800 92px Georgia, serif';
-    ctx.fillText('LUMEN MOTH', VIEW.width / 2, 216);
+    ctx.fillText('LUMEN MOTH', VIEW.width / 2, 186);
     ctx.fillStyle = PALETTE.hudDim;
     ctx.font = 'italic 26px Georgia, serif';
-    ctx.fillText('Keep the lantern lit. Outlast the dark.', VIEW.width / 2, 262);
-    panel(VIEW.width / 2 - 330, 296, 660, 226);
-    ctx.fillStyle = PALETTE.hudInk;
-    ctx.font = '600 21px system-ui, sans-serif';
-    ctx.fillText('Move with MOUSE or WASD / ARROWS', VIEW.width / 2, 336);
-    ctx.fillText('Gather golden motes to feed your lantern', VIEW.width / 2, 370);
-    ctx.fillText('Golden blooms pay 3x — if you dare fly close to the wisps', VIEW.width / 2, 404);
-    ctx.fillText('Dodge the shadow wisps — 3 petals, then the dark wins', VIEW.width / 2, 438);
-    ctx.fillText('SPACE or CLICK: Flare burst (spends light, banishes wisps)', VIEW.width / 2, 472);
-    ctx.fillText('Survive all 5 nights — and the Wisp King — to see the dawn', VIEW.width / 2, 506);
+    ctx.fillText('Keep the lantern lit. Outlast the dark.', VIEW.width / 2, 228);
+
+    // The hero, big, in front of the world: Luma with her lantern.
+    // Placed high enough that her lantern's glow clears the control strip.
+    drawHeroMoth(300, 385, 3.0, state.time);
+
+    // Proof of contents: the four wisp kinds as an icon roster, then the
+    // count of what the game holds — no paragraph to read.
+    panel(620, 280, 600, 260);
+    ctx.fillStyle = PALETTE.gold;
+    ctx.font = '800 20px system-ui, sans-serif';
+    ctx.fillText('THE SHADOW WISPS', 920, 316);
+    const roster = ['drifter', 'hunter', 'splitter', 'dasher'];
+    roster.forEach((kind, i) => {
+      const spec = WISP_KINDS[kind];
+      const y = 352 + i * 38;
+      drawWispIcon(662, y - 6, 15, kind);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = PALETTE.hudInk;
+      ctx.font = '700 20px system-ui, sans-serif';
+      ctx.fillText(`${spec.name}  —  ${spec.verb}`, 692, y);
+    });
+    ctx.textAlign = 'center';
     ctx.fillStyle = PALETTE.gold;
     ctx.font = '700 19px system-ui, sans-serif';
-    ctx.fillText('4 WISP KINDS  •  DEWDROP SHIELD  •  SUNPETAL MAGNET  •  DAWN SHARD FREEZE', VIEW.width / 2, 540);
-    if (best > 0) {
-      ctx.fillStyle = PALETTE.gold;
-      ctx.font = '800 24px system-ui, sans-serif';
-      ctx.fillText(`BEST SCORE  ${best}`, VIEW.width / 2, 580);
-    }
-    const blink = 0.8 + 0.2 * Math.sin(state.time * 3);
-    ctx.globalAlpha = blink;
-    ctx.fillStyle = '#fff8e2';
-    ctx.font = '800 28px system-ui, sans-serif';
-    ctx.fillText('CLICK OR PRESS SPACE TO BEGIN', VIEW.width / 2, 636);
-    ctx.globalAlpha = 1;
+    ctx.fillText('SURVIVE 5 NIGHTS  •  4 WISP KINDS  •  3 GIFTS  •  1 BOSS', 920, 508);
+
+    // One strip of controls — the full how-to lives on the pause screen.
+    ctx.fillStyle = PALETTE.hudInk;
+    ctx.font = '600 20px system-ui, sans-serif';
+    ctx.fillText('MOVE — mouse / WASD      •      GATHER — golden motes      •      FLARE — space / click', VIEW.width / 2, 566);
+
+    // A real button, gold on navy, a quarter of the frame wide.
+    const btnGrad = ctx.createLinearGradient(440, 0, 840, 0);
+    btnGrad.addColorStop(0, '#ffcf4d');
+    btnGrad.addColorStop(1, '#ff9d2e');
+    ctx.fillStyle = btnGrad;
+    roundRect(ctx, 440, 600, 400, 66, 16);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 233, 168, 0.9)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.fillStyle = '#241a08';
+    ctx.font = '800 34px system-ui, sans-serif';
+    ctx.fillText('BEGIN THE NIGHT', VIEW.width / 2, 645);
     ctx.restore();
   }
 
@@ -608,16 +813,32 @@ export function createRenderer(canvas) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fff8e2';
     ctx.font = '800 64px Georgia, serif';
-    ctx.fillText('PAUSED', VIEW.width / 2, 330);
+    ctx.fillText('PAUSED', VIEW.width / 2, 300);
     ctx.fillStyle = PALETTE.hudDim;
     ctx.font = '600 24px system-ui, sans-serif';
-    ctx.fillText('Press P or SPACE to keep flying', VIEW.width / 2, 384);
+    ctx.fillText('Press P or SPACE to keep flying', VIEW.width / 2, 352);
+    // The full how-to lives here, off the cover.
+    ctx.fillStyle = PALETTE.gold;
+    ctx.font = '800 24px system-ui, sans-serif';
+    ctx.fillText('HOW TO PLAY', VIEW.width / 2, 412);
+    ctx.fillStyle = PALETTE.hudInk;
+    ctx.font = '600 20px system-ui, sans-serif';
+    ctx.fillText('Move with MOUSE or WASD / ARROWS', VIEW.width / 2, 452);
+    ctx.fillText('Gather golden motes to feed your lantern', VIEW.width / 2, 484);
+    ctx.fillText('Golden blooms pay 3x — if you dare fly close to the wisps', VIEW.width / 2, 516);
+    ctx.fillText('Dodge the shadow wisps — 3 petals, then the dark wins', VIEW.width / 2, 548);
+    ctx.fillText('SPACE or CLICK: flare burst (spends light, banishes wisps)', VIEW.width / 2, 580);
+    ctx.fillText('Survive all 5 nights — and the Wisp King — to see the dawn', VIEW.width / 2, 612);
+    ctx.fillStyle = PALETTE.gold;
+    ctx.font = '700 18px system-ui, sans-serif';
+    ctx.fillText('DEWDROP SHIELD  •  SUNPETAL MAGNET  •  DAWN SHARD FREEZE', VIEW.width / 2, 652);
     ctx.restore();
   }
 
   function drawResults(state, best, won) {
     ctx.save();
-    ctx.fillStyle = 'rgba(4, 6, 20, 0.55)';
+    // At dawn the overlay stays thin, so the sunrise shows around the panel.
+    ctx.fillStyle = won ? 'rgba(4, 6, 20, 0.28)' : 'rgba(4, 6, 20, 0.55)';
     ctx.fillRect(0, 0, VIEW.width, VIEW.height);
     panel(VIEW.width / 2 - 360, 118, 720, 470);
     ctx.textAlign = 'center';
@@ -677,7 +898,7 @@ export function createRenderer(canvas) {
           Math.cos(state.time * 113.3) * state.shake,
         );
       }
-      drawSky(state);
+      drawSky(state, screen);
       drawMotes(state);
       drawPowerups(state);
       drawWisps(state);

@@ -67,6 +67,7 @@ export function createWorld(random, particles) {
     stars: [],
     flowers: [],
     spores: [],
+    lanterns: [],
     banner: null,
     nightPalette: null,
     windStrength: 0,
@@ -88,16 +89,28 @@ export function createWorld(random, particles) {
       });
     }
     // Drifting fireflies and spores: the air itself glows, so the field never
-    // reads as empty even between motes.
+    // reads as empty even between motes. v3: more of them, and brighter.
     state.spores = [];
-    for (let i = 0; i < 44; i += 1) {
+    for (let i = 0; i < 72; i += 1) {
       state.spores.push({
         x: random.range(0, VIEW.width),
         y: random.range(60, VIEW.height - 60),
-        size: random.range(1.2, 3.2),
+        size: random.range(1.4, 3.8),
         phase: random.range(0, Math.PI * 2),
         drift: random.range(4, 14),
         hue: random.pick(['#ffd76a', '#9be8ff', '#b8ffce', '#ffb3c9']),
+      });
+    }
+    // Hanging lanterns in the far distance: a second layer of warm light
+    // across the middle of the sky, so the upper field is never empty.
+    state.lanterns = [];
+    for (let i = 0; i < 8; i += 1) {
+      state.lanterns.push({
+        x: 90 + i * 150 + random.range(-40, 40),
+        y: random.range(120, 250),
+        sway: random.range(0, Math.PI * 2),
+        size: random.range(0.8, 1.25),
+        hue: random.pick(['#ffd76a', '#ff9d5c', '#9be8ff']),
       });
     }
     state.flowers = [];
@@ -207,6 +220,8 @@ export function createWorld(random, particles) {
     state.light -= LIGHT.flareCost;
     state.stats.flares += 1;
     particles.ring(state.moth.x, state.moth.y, '#ffd76a', FLARE.radius);
+    // The big moment, named on screen: FLARE! in the centre, for ~1 s.
+    particles.text(VIEW.width / 2, 190, 'FLARE!', '#ffd76a', 56);
     return EVENT_FLARE;
   }
 
@@ -293,6 +308,7 @@ export function createWorld(random, particles) {
 
   /** One mote collected: combo, score, light — blooms pay 3x, trails pay extra. */
   function awardMotePickup(mote) {
+    const prevCombo = state.combo;
     state.combo = Math.min(state.combo + 1, MOTE.maxCombo);
     state.comboTimer = MOTE.comboWindowSeconds;
     const base = mote.trail ? TRAIL.score : MOTE.score;
@@ -306,14 +322,20 @@ export function createWorld(random, particles) {
     if (mote.bloom) {
       state.stats.blooms += 1;
       particles.burst(mote.x, mote.y, '#ffd76a', 16, 220);
-      particles.text(mote.x, mote.y - 16, `BLOOM +${value}`, '#ffe9a8');
+      particles.text(mote.x, mote.y - 16, `BLOOM +${value}`, '#ffd76a');
+      // The bloom is the 3x moment: name it big in the centre, once.
+      particles.text(VIEW.width / 2, 190, 'BLOOM x3!', '#ffd76a', 54);
     } else if (mote.trail) {
       state.stats.trails += 1;
       particles.burst(mote.x, mote.y, '#9be8ff', 12, 180);
-      particles.text(mote.x, mote.y - 16, `+${value}`, '#cfeeff');
+      particles.text(mote.x, mote.y - 16, `+${value}`, '#ffffff');
     } else {
       particles.burst(mote.x, mote.y, '#ffd76a', 12, 180);
-      particles.text(mote.x, mote.y - 14, `+${value}`, '#ffe9a8');
+      particles.text(mote.x, mote.y - 14, `+${value}`, '#ffffff');
+    }
+    // A full combo is worth shouting about, once when the chain tops out.
+    if (state.combo >= MOTE.maxCombo && prevCombo < MOTE.maxCombo && !mote.bloom) {
+      particles.text(VIEW.width / 2, 190, `COMBO x${MOTE.maxCombo}!`, '#ffd76a', 54);
     }
   }
 

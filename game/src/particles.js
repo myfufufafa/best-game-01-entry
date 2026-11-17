@@ -29,8 +29,8 @@ export function createParticles(random) {
     ring(x, y, color, maxRadius) {
       rings.push({ x, y, color, maxRadius, age: 0, life: 0.6 });
     },
-    text(x, y, message, color) {
-      texts.push({ x, y, message, color, age: 0, life: 1.1 });
+    text(x, y, message, color, size = 30) {
+      texts.push({ x, y, message, color, size, age: 0, life: 1.1 });
     },
     clear() {
       sparks.length = 0;
@@ -84,9 +84,14 @@ export function createParticles(random) {
       ctx.restore();
       ctx.save();
       ctx.textAlign = 'center';
-      ctx.font = '800 27px system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
       for (const t of texts) {
         ctx.globalAlpha = 1 - t.age / t.life;
+        ctx.font = `800 ${t.size}px system-ui, sans-serif`;
+        // Dark outline first, so a gold or white score reads on any sky.
+        ctx.lineWidth = Math.max(3, t.size / 7);
+        ctx.strokeStyle = 'rgba(8, 8, 28, 0.85)';
+        ctx.strokeText(t.message, t.x, t.y);
         ctx.fillStyle = t.color;
         ctx.fillText(t.message, t.x, t.y);
       }
